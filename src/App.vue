@@ -2,7 +2,7 @@
 	<div class="week-view flex flex-col items-center w-full h-full">
 		<div class="header flex justify-between w-full px-4 py-2 bg-gray-200">
 			<h1 class="text-xl font-bold text-gray-800">Roadbaze</h1>
-			<p class="text-sm text-gray-600">{{ currentWeek }}</p>
+			<p class="text-sm text-gray-600 font-semibold">{{ currentWeek }}</p>
 		</div>
 		<div class="station-dropdown flex items-center w-full px-4 py-2 mt-2">
 			<label for="station" class="text-sm mr-2 text-gray-600">Station:</label>
@@ -14,18 +14,15 @@
 			:bookings="weekBookings"
 			@previous-week="prevWeek"
 			@next-week="nextWeek"
-			@booking-click="showBookingDetails"
 			class="grid grid-cols-7 gap-2 mt-4 px-4" />
 
 		<BookingList :selectedStation="selectedStation" />
-		<BookingDetails v-if="bookingDetails" :details="bookingDetails" @close="hideBookingDetails" />
 	</div>
 </template>
 
 <script>
 import StationSelection from "./components/StationDropdown.vue";
 import WeekView from "./components/WeekView.vue";
-import BookingDetails from "./components/BookingDetail.vue";
 
 import axios from "axios";
 import BookingList from "./components/BookingList.vue";
@@ -34,7 +31,6 @@ export default {
 	components: {
 		StationSelection,
 		WeekView,
-		BookingDetails,
 		BookingList,
 	},
 	data() {
@@ -44,7 +40,6 @@ export default {
 			selectedStation: null,
 			selectedDay: null,
 			weekBookings: {},
-			bookingDetails: null,
 			currentWeek: null, // Current week string representation
 			days: null, // Array of objects representing days
 		};
@@ -142,28 +137,19 @@ export default {
 			// Fetch events for the new week based on selected station (implementation needed)
 		},
 		findEarliestDate(data) {
-			let earliestDate = null;
+			let earliestDate = new Date(); // Initialize with current date/time
 
-			// Iterate through each station
-			for (const station of data) {
-				// Iterate through each booking in the station
-				for (const booking of station.bookings) {
-					const startDate = new Date(booking.startDate); // Parse the startDate string to a Date object
-
-					// Check if earliestDate is not set or if current startDate is earlier
-					if (!earliestDate || startDate < earliestDate) {
+			data.forEach((city) => {
+				city.bookings.forEach((booking) => {
+					const startDate = new Date(booking.startDate);
+					if (startDate < earliestDate) {
 						earliestDate = startDate;
 					}
-				}
-			}
+				});
+			});
+
 			this.earliestDay = earliestDate?.toISOString().split("T")[0];
 			return earliestDate?.toISOString().split("T")[0];
-		},
-		showBookingDetails(booking) {
-			this.bookingDetails = booking;
-		},
-		hideBookingDetails() {
-			this.bookingDetails = null;
 		},
 	},
 	async created() {

@@ -1,15 +1,13 @@
 <template>
 	<div class="week-navigation flex justify-between items-center px-4 py-2 bg-gray-200 space-x-3">
 		<button @click="prevWeek" class="week-btn">Previous Week</button>
-		<!-- <p class="text-xl font-semibold text-gray-800">{{ currentWeek }}</p> -->
-		<button @click="goToCurrentWeek" class="week-btn">Current Week</button>
 		<button @click="nextWeek" class="week-btn">Next Week</button>
 	</div>
 	<div class="week-grid grid grid-cols-7 gap-2 px-4 py-4">
 		<div
 			v-for="day in days"
 			:key="day.date"
-			class="day "
+			class="day"
 			@click="
 				changeDay(day);
 				selected = day;
@@ -21,6 +19,7 @@
 </template>
 
 <script>
+
 export default {
 	inject: ["$days", "$selectedDay", "$currentWeek", "prevWeek", "nextWeek", "goToCurrentWeek", "changeDay"],
 	props: {
