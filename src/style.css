@@ -2,27 +2,30 @@
 @tailwind components;
 @tailwind utilities;
 
-
-#app, body{
-    /* background-color: black;
+#app,
+body {
+	/* background-color: black;
     height: 100vh; */
-
 }
 
-@layer components{
-    .week-btn{
-        /* @apply bg-blue-500 text-white px-4 py-2  m-1 text-center hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 cursor-pointer */
+@layer components {
+	.week-btn {
+		@apply text-sm font-medium text-gray-600 hover:text-gray-800 hover:underline;
+	}
+	.day {
+		@apply text-center text-sm font-medium rounded-md py-2 px-4 hover:bg-gray-100 hover:text-black cursor-pointer transition;
+	}
+
+    .items{
+        @apply flex space-x-3
     }
-    .week-day{
-        /* @apply flex flex-grow justify-center items-center bg-purple-300 p-4 m-1 w-40 h-40 border cursor-pointer text-center font-bold hover:bg-purple-500 hover:text-white hover:scale-110 transition  */
-    }
-    .div-center{
-        /* @apply flex justify-center items-center */
-    }
-    .div-col{
-        /* @apply flex-col justify-center items-center */
-    }
-    .today{
-        /* @apply border border-t-black */
-    }
+	.div-center {
+		/* @apply flex justify-center items-center */
+	}
+	.div-col {
+		/* @apply flex-col justify-center items-center */
+	}
+	.today {
+		/* @apply border border-t-black */
+	}
 }

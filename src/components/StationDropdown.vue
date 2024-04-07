@@ -14,11 +14,14 @@
 
 <script>
 export default {
-	inject: ["$stations", "selectedStation", "changeStation"],
+	inject: ["$stations", "changeStation"],
 	data() {
 		return {
 			chosenOption: this.selectedStation,
 		};
+	},
+	props: {
+		selectedStation: Object
 	},
 	computed: {
 		stations() {

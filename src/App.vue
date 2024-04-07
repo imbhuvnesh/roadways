@@ -6,11 +6,7 @@
 		</div>
 		<div class="station-dropdown flex items-center w-full px-4 py-2 mt-2">
 			<label for="station" class="text-sm mr-2 text-gray-600">Station:</label>
-			<StationSelection
-				:stations="stations"
-				:selectedStation="selectedStation"
-				@update:selectedStation="handleStationChange"
-				class="w-full" />
+			<StationSelection :stations="stations" :selectedStation="selectedStation" class="w-full" />
 		</div>
 		<WeekView
 			:days="days"
@@ -20,6 +16,8 @@
 			@next-week="nextWeek"
 			@booking-click="showBookingDetails"
 			class="grid grid-cols-7 gap-2 mt-4 px-4" />
+
+		<BookingList :selectedStation="selectedStation" />
 		<BookingDetails v-if="bookingDetails" :details="bookingDetails" @close="hideBookingDetails" />
 	</div>
 </template>
@@ -30,23 +28,34 @@ import WeekView from "./components/WeekView.vue";
 import BookingDetails from "./components/BookingDetail.vue";
 
 import axios from "axios";
+import BookingList from "./components/BookingList.vue";
 
 export default {
 	components: {
 		StationSelection,
 		WeekView,
 		BookingDetails,
+		BookingList,
 	},
 	data() {
 		return {
 			stations: [],
+			earliestDay: null,
 			selectedStation: null,
 			selectedDay: null,
 			weekBookings: {},
 			bookingDetails: null,
-			currentWeek: this.getWeekString(), // Current week string representation
-			days: this.getWeekDays(), // Array of objects representing days
+			currentWeek: null, // Current week string representation
+			days: null, // Array of objects representing days
 		};
+	},
+	computed: {
+		defaultCurrentWeek() {
+			return this.getWeekString(this.earliestDay);
+		},
+		defaultDays() {
+			return this.getWeekDays(this.earliestDay);
+		},
 	},
 	provide() {
 		return {
@@ -67,6 +76,7 @@ export default {
 			try {
 				const response = await axios.get("https://605c94c36d85de00170da8b4.mockapi.io/stations");
 				this.stations = response.data;
+				await this.findEarliestDate(this.stations);
 			} catch (error) {
 				console.error("Error fetching stations:", error);
 			}
@@ -77,14 +87,17 @@ export default {
 			return startDate;
 		},
 		getWeekString(date) {
-			const today = date || new Date();
+			const today = new Date(date) || new Date();
 			const day = today.getDay(); // 0 (Sunday) to 6 (Saturday)
 			const startDate = new Date(today.setDate(today.getDate() - day));
 			const endDate = new Date(startDate.getTime() + 6 * 24 * 60 * 60 * 1000);
-			return `${startDate.toLocaleDateString()} - ${endDate.toLocaleDateString()}`;
+			this.currentWeek = `${startDate.toLocaleDateString()} - ${endDate.toLocaleDateString()}`;
+			return this.currentWeek;
 		},
 		getWeekDays(date) {
-			const today = date || new Date();
+			// const earliestDate = this.findEarliestDate();
+			console.log(this.earliestDate);
+			const today = new Date(date) || new Date();
 			const startDate = this.getStartDateOfWeek(today);
 			const days = [];
 			for (let i = 0; i < 7; i++) {
@@ -94,15 +107,14 @@ export default {
 					normalFormatDate: date.toISOString().split("T")[0],
 				});
 			}
+			this.days = days;
 			return days;
 		},
 		handleStationChange(newStation) {
 			this.selectedStation = newStation;
-			this.weekBookings = {}; // clear existing bookings when station changes
-			// this.getWeekBookings(newStation);
 		},
 		changeDay(newDay) {
-			console.log('newDay: ', newDay);
+			console.log("newDay: ", newDay);
 			this.selectedDay = newDay;
 		},
 		goToCurrentWeek() {
@@ -111,8 +123,11 @@ export default {
 		},
 		prevWeek() {
 			const currentDate = this.days[0].normalFormatDate;
+			console.log("currentDate: ", currentDate);
 			const startDate = this.getStartDateOfWeek(new Date(currentDate));
+			console.log("startDate: ", startDate);
 			startDate.setDate(startDate.getDate() - 7);
+			console.log("startDate: ", startDate);
 			this.updateWeek(startDate);
 		},
 		nextWeek() {
@@ -126,23 +141,24 @@ export default {
 			this.days = this.getWeekDays(startDate);
 			// Fetch events for the new week based on selected station (implementation needed)
 		},
-		// async getWeekBookings(stationId) {
-		// 	const startDate = new Date(this.weekBookings?.[this.days[0]]?.[0]?.startDate || new Date());
-		// 	startDate.setDate(startDate.getDate() - startDate.getDay()); // Set to beginning of the week
-		// 	try {
-		// 		const response = await fetch(`https://605c94c36d85de00170da8b4.mockapi.io/stations`);
-		// 		console.log("response: ", response);
-		// 		this.weekBookings = await response.json();
-		// 		this.weekBookings = this.weekBookings.reduce((acc, booking) => {
-		// 			const bookingDate = new Date(booking.startDate).getDay();
-		// 			acc[this.days[bookingDate]] = acc[this.days[bookingDate]] || [];
-		// 			acc[this.days[bookingDate]].push(booking);
-		// 			return acc;
-		// 		}, {});
-		// 	} catch (error) {
-		// 		console.error("Error fetching bookings:", error);
-		// 	}
-		// },
+		findEarliestDate(data) {
+			let earliestDate = null;
+
+			// Iterate through each station
+			for (const station of data) {
+				// Iterate through each booking in the station
+				for (const booking of station.bookings) {
+					const startDate = new Date(booking.startDate); // Parse the startDate string to a Date object
+
+					// Check if earliestDate is not set or if current startDate is earlier
+					if (!earliestDate || startDate < earliestDate) {
+						earliestDate = startDate;
+					}
+				}
+			}
+			this.earliestDay = earliestDate?.toISOString().split("T")[0];
+			return earliestDate?.toISOString().split("T")[0];
+		},
 		showBookingDetails(booking) {
 			this.bookingDetails = booking;
 		},
@@ -152,6 +168,9 @@ export default {
 	},
 	async created() {
 		await this.fetchStations();
+		await this.findEarliestDate(this.stations);
+		this.getWeekString(this.earliestDay);
+		this.getWeekDays(this.earliestDay);
 	},
 };
 </script>
