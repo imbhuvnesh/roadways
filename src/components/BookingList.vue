@@ -3,7 +3,7 @@
 		<h3>
 			{{ !selectedStation || !selectedDay ? 'Please Select a station and day to start' : '' }}
 			No pickups or returns on this
-			day at {{ selectedStation.name }}
+			day at {{ selectedStation?.name }}
 		</h3>
 	</div>
 	<div v-else class="flex w-max">
@@ -55,6 +55,7 @@ export default {
 		},
 	},
 	methods: {
+		// fetches booking from api and shows.
 		async showBookingDetails(booking) {
 			try {
 				const stationId = booking.pickupReturnStationId;
@@ -83,6 +84,8 @@ export default {
 				console.error(error);
 			}
 		},
+
+		// gets pickups and drops of a particular day
 		getBookings() {
 			if (this.selectedStation) {
 				const station = this.selectedStation;
@@ -126,6 +129,7 @@ export default {
 		},
 	},
 	watch: {
+		//watching if selected station or day is changed.
 		selectedStation: function () {
 			this.getBookings();
 		},

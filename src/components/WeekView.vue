@@ -1,7 +1,7 @@
 <template>
 	<div class="week-navigation flex justify-between items-center px-4 py-2 bg-gray-200 space-x-3">
-		<button @click="prevWeek" class="week-btn">Previous Week</button>
-		<button @click="nextWeek" class="week-btn">Next Week</button>
+		<button @click="prevWeek" data-test="previous-week-button" class="week-btn">Previous Week</button>
+		<button @click="nextWeek" data-test="next-week-button" class="week-btn">Next Week</button>
 	</div>
 	<div class="week-grid grid grid-cols-7 gap-2 px-4 py-4">
 		<div
@@ -50,6 +50,7 @@ export default {
 	},
 
 	methods: {
+		// checks if the a date is today or not
 		isDateToday(givenDate) {
 			return new Date().toDateString() === new Date(givenDate).toDateString();
 		},

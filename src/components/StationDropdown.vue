@@ -28,14 +28,6 @@ export default {
 			return this.$stations();
 		},
 	},
-	methods: {
-		emitStationChange() {
-			this.$emit("update:selectedStation", this.chosenOption);
-		},
-	},
-	created() {
-		// console.log(this.chosenOption);
-	},
 };
 </script>
 

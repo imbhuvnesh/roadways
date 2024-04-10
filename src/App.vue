@@ -2,7 +2,7 @@
 	<div class="week-view flex flex-col items-center w-full h-full">
 		<div class="header flex justify-between w-full px-4 py-2 bg-gray-200">
 			<h1 class="text-xl font-bold text-gray-800">Roadbaze</h1>
-			<p class="text-sm text-gray-600 font-semibold">{{ currentWeek }}</p>
+			<p data-test="current-week-string" class="text-sm text-gray-600 font-semibold">{{ currentWeek }}</p>
 		</div>
 		<div class="station-dropdown flex items-center w-full px-4 py-2 mt-2">
 			<label for="station" class="text-sm mr-2 text-gray-600">Station:</label>
@@ -40,8 +40,8 @@ export default {
 			selectedStation: null,
 			selectedDay: null,
 			weekBookings: {},
-			currentWeek: null, // Current week string representation
-			days: null, // Array of objects representing days
+			currentWeek: null,
+			days: null, 
 		};
 	},
 	computed: {
@@ -67,6 +67,7 @@ export default {
 		};
 	},
 	methods: {
+		// async functions to fetch stations and data
 		async fetchStations() {
 			try {
 				const response = await axios.get("https://605c94c36d85de00170da8b4.mockapi.io/stations");
@@ -76,11 +77,15 @@ export default {
 				console.error("Error fetching stations:", error);
 			}
 		},
+
+		// returns the start date of the week
 		getStartDateOfWeek(date) {
 			const day = date.getDay(); // 0 (Sunday) to 6 (Saturday)
 			const startDate = new Date(date.setDate(date.getDate() - day));
 			return startDate;
 		},
+
+		// returns the week string that shows current date range
 		getWeekString(date) {
 			const today = new Date(date) || new Date();
 			const day = today.getDay(); // 0 (Sunday) to 6 (Saturday)
@@ -89,9 +94,9 @@ export default {
 			this.currentWeek = `${startDate.toLocaleDateString()} - ${endDate.toLocaleDateString()}`;
 			return this.currentWeek;
 		},
+
+		// returns and set the days of the week according to the date
 		getWeekDays(date) {
-			// const earliestDate = this.findEarliestDate();
-			console.log(this.earliestDate);
 			const today = new Date(date) || new Date();
 			const startDate = this.getStartDateOfWeek(today);
 			const days = [];
@@ -105,26 +110,32 @@ export default {
 			this.days = days;
 			return days;
 		},
+
+		// changes the selected station
 		handleStationChange(newStation) {
 			this.selectedStation = newStation;
 		},
+
+		//changes the selected day
 		changeDay(newDay) {
-			console.log("newDay: ", newDay);
 			this.selectedDay = newDay;
 		},
+
+		//function to go to current week
 		goToCurrentWeek() {
 			const startDate = this.getStartDateOfWeek(new Date());
 			this.updateWeek(startDate);
 		},
+
+		//function to go to previous week
 		prevWeek() {
 			const currentDate = this.days[0].normalFormatDate;
-			console.log("currentDate: ", currentDate);
 			const startDate = this.getStartDateOfWeek(new Date(currentDate));
-			console.log("startDate: ", startDate);
 			startDate.setDate(startDate.getDate() - 7);
-			console.log("startDate: ", startDate);
 			this.updateWeek(startDate);
 		},
+
+		//function to go to next week
 		nextWeek() {
 			const currentDate = this.days[0].normalFormatDate;
 			const startDate = this.getStartDateOfWeek(new Date(currentDate));
@@ -134,8 +145,9 @@ export default {
 		updateWeek(startDate) {
 			this.currentWeek = this.getWeekString(startDate);
 			this.days = this.getWeekDays(startDate);
-			// Fetch events for the new week based on selected station (implementation needed)
 		},
+
+		// finds the earliest starting date from data to bind calender with
 		findEarliestDate(data) {
 			let earliestDate = new Date(); // Initialize with current date/time
 
